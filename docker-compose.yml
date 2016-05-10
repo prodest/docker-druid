@@ -1,0 +1,17 @@
+druid:
+  ports:
+  - 8081:8081/tcp
+  - 8082:8082/tcp
+  - 8090:8090/tcp
+  log_driver: ''
+  labels:
+    io.rancher.container.pull_image: always
+  tty: true
+  log_opt: {}
+  image: druidio/example-cluster
+  volumes:
+  - /opt/dockerdata/druid/druid:/etc/supervisor/conf.d
+  stdin_open: true
+mysql:
+  volumes:
+  - /opt/dockerdata/druid:/etc/supervisor/conf.d
