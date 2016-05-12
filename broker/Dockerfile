@@ -1,7 +1,8 @@
 FROM ubuntu:14.04
 
 # Java 8
-RUN apt-get install -y software-properties-common \
+RUN   apt-get update  \
+      && apt-get install -y software-properties-common \
       && apt-add-repository -y ppa:webupd8team/java \
       && apt-get purge --auto-remove -y software-properties-common \
       && apt-get update \
@@ -10,8 +11,6 @@ RUN apt-get install -y software-properties-common \
       && apt-get install -y oracle-java8-set-default \
       && rm -rf /var/cache/oracle-jdk8-installer
 
-# MySQL (Metadata store)
-RUN apt-get install -y mysql-server
 
 # Supervisor
 RUN apt-get install -y supervisor
@@ -24,20 +23,12 @@ RUN wget -q -O - http://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apa
       && ln -s /usr/local/apache-maven-3.2.5 /usr/local/apache-maven \
       && ln -s /usr/local/apache-maven/bin/mvn /usr/local/bin/mvn
 
-# Zookeeper
-RUN wget -q -O - http://www.us.apache.org/dist/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz | tar -xzf - -C /usr/local \
-      && cp /usr/local/zookeeper-3.4.6/conf/zoo_sample.cfg /usr/local/zookeeper-3.4.6/conf/zoo.cfg \
-      && ln -s /usr/local/zookeeper-3.4.6 /usr/local/zookeeper
 
 # Druid system user
 RUN adduser --system --group --no-create-home druid \
       && mkdir -p /var/lib/druid \
       && chown druid:druid /var/lib/druid
 
-# Druid (release tarball)
-#ENV DRUID_VERSION 0.7.1.1
-#RUN wget -q -O - http://static.druid.io/artifacts/releases/druid-services-$DRUID_VERSION-bin.tar.gz | tar -xzf - -C /usr/local
-#RUN ln -s /usr/local/druid-services-$DRUID_VERSION /usr/local/druid
 
 # Druid (from source)
 RUN mkdir -p /usr/local/druid/lib
@@ -71,19 +62,7 @@ RUN apt-get purge --auto-remove -y git \
 
 WORKDIR /
 
-# Setup metadata store and add sample data
-ADD sample-data.sql sample-data.sql
-RUN /etc/init.d/mysql start \
-      && mysql -u root -e "GRANT ALL ON druid.* TO 'druid'@'localhost' IDENTIFIED BY 'diurd'; CREATE database druid CHARACTER SET utf8;" \
-      && java -cp /usr/local/druid/lib/druid-services-*-selfcontained.jar \
-          -Ddruid.extensions.directory=/usr/local/druid/extensions \
-          -Ddruid.extensions.loadList=[\"mysql-metadata-storage\"] \
-          -Ddruid.metadata.storage.type=mysql \
-          io.druid.cli.Main tools metadata-init \
-              --connectURI="jdbc:mysql://localhost:3306/druid" \
-              --user=druid --password=diurd \
-      && mysql -u root druid < sample-data.sql \
-      && /etc/init.d/mysql stop
+
 
 # Setup supervisord
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -95,12 +74,8 @@ ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # - 8090: HTTP (overlord)
 # - 3306: MySQL
 # - 2181 2888 3888: ZooKeeper
-EXPOSE 8081
+
 EXPOSE 8082
-EXPOSE 8083
-EXPOSE 8090
-EXPOSE 3306
-EXPOSE 2181 2888 3888
 
 WORKDIR /var/lib/druid
 ENTRYPOINT export HOSTIP="$(resolveip -s $HOSTNAME)" && exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
