@@ -1,4 +1,4 @@
-FROM prodest/druid:0.9.9-base
+FROM prodest/druid:0.9.0-base
 
 
 # clean up time
@@ -24,4 +24,4 @@ EXPOSE 8082
 WORKDIR /var/lib/druid
 
 
-CMD java -server ${MAX_JVM_MEM_SIZE}s -Duser.timezone=${TIMEZONE}s -Dfile.encoding=UTF-8 -Ddruid.host=${ENV_HOSTIP}s -Ddruid.computation.buffer.size=${BUFFER_SIZE} -cp /usr/local/druid/lib/* -Ddruid.broker.cache.sizeInBytes=${CACHE_SIZE} io.druid.cli.Main server broker
+CMD java -server ${MAX_JVM_MEM_SIZE} -Duser.timezone=${TIMEZONE} -Dfile.encoding=UTF-8 -Ddruid.zk.service.host=${ZOOKEEPER_HOST} -Ddruid.computation.buffer.size=${BUFFER_SIZE} -cp /usr/local/druid/lib/* -Ddruid.broker.cache.sizeInBytes=${CACHE_SIZE}  io.druid.cli.Main server broker
