@@ -32,6 +32,8 @@ ENV GITHUB_OWNER prodest
 # whichever branch you would like to build
 ENV DRUID_VERSION stable
 
+# Supervisor
+RUN apt-get install -y supervisor
 
 # trigger rebuild only if branch changed
 ADD https://api.github.com/repos/$GITHUB_OWNER/druid/git/refs/heads/$DRUID_VERSION druid-version.json
@@ -48,18 +50,14 @@ RUN cp -r distribution/target/extensions /usr/local/druid/ && \
     cp -r distribution/target/hadoop-dependencies /usr/local/druid/hadoop/hadoop_druid_dependencies
 
 # clean up time
-#RUN apt-get purge --auto-remove -y git \
-#      && apt-get clean \
-#      && rm -rf /tmp/* \
-#                /var/tmp/* \
-#                /var/lib/apt/lists \
-#                /usr/local/apache-maven-3.2.5 \
-#                /usr/local/apache-maven \
-#                /root/.m2
-
-
-WORKDIR /var/lib/druid
-
+RUN apt-get purge --auto-remove -y git \
+      && apt-get clean \
+      && rm -rf /tmp/* \
+                /var/tmp/* \
+                /var/lib/apt/lists \
+                /usr/local/apache-maven-3.2.5 \
+                /usr/local/apache-maven \
+                /root/.m2
 
 CMD bash
 

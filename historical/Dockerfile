@@ -1,16 +1,5 @@
 FROM prodest/druid:0.9.0-base
 
-
-# clean up time
-RUN apt-get purge --auto-remove -y git \
-      && apt-get clean \
-      && rm -rf /tmp/* \
-                /var/tmp/* \
-                /var/lib/apt/lists \
-                /usr/local/apache-maven-3.2.5 \
-                /usr/local/apache-maven \
-                /root/.m2
-
 # Expose ports:
 # - 8081: HTTP (coordinator)
 # - 8082: HTTP (broker)
@@ -21,7 +10,15 @@ RUN apt-get purge --auto-remove -y git \
 
 EXPOSE 8083
 
+# Setup supervisord
+ADD supervisord.conf /etc/supervisor/conf.d/historical/supervisord.conf
+
+
 WORKDIR /var/lib/druid
 
 
-CMD java -server ${MAX_JVM_MEM_SIZE} -Duser.timezone=${TIMEZONE} -Dfile.encoding=UTF-8 -Ddruid.extensions.loadList=[\"druid-hdfs-storage\"] -Ddruid.extensions.directory=/usr/local/druid/extensions -Ddruid.extensions.hadoopDependenciesDir=/usr/local/druid/hadoop/hadoop_druid_dependencies -Ddruid.storage.type=hdfs -Ddruid.storage.storageDirectory=${HADOOP_URL} -Ddruid.zk.service.host=${ZOOKEEPER_HOST} -Ddruid.computation.buffer.size=${BUFFER_SIZE} -Ddruid.segmentCache.locations=${SEGMENT_CACHE_LOCATIONS} -Ddruid.server.http.numThreads=${NUM_THREADS} -cp /usr/local/druid/lib/*  -Ddruid.server.maxSize=${SERVER_MAX_SIZE}  io.druid.cli.Main server historical
+
+
+ENTRYPOINT exec /usr/bin/supervisord -c /etc/supervisor/conf.d/historical/supervisord.conf
+
+

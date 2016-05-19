@@ -1,17 +1,94 @@
-druid:
+overlord:
+  ports:
+  - 8090:8090/tcp
+  environment:
+    MAX_JVM_MEM_SIZE: -Xmx4g -XX:MaxDirectMemorySize=3221225472
+    TIMEZONE: GMT-3
+    ZOOKEEPER_HOST: zk
+    MYSQL_JDBC_URL: jdbc:mysql://mysql:3306/druid
+    MYSQL_PASS: druid
+    MYSQL_USER: druid
+    INDEXER_JAVA_OPTS: -server -Xmx3g -XX:MaxDirectMemorySize=2147483648
+    INDEXER_DELAY: PT2M
+  log_driver: ''
+  tty: true
+  log_opt: {}
+  image: prodest/druid:0.9.0-overlord
+  links:
+  - 'mysql:'
+  - zookeeper:zk
+  stdin_open: true
+zookeeper:
+  log_driver: ''
+  tty: true
+  log_opt: {}
+  image: xdevelsistemas/debian-env:zookeeper-env
+  stdin_open: true
+historical:
+  ports:
+  - 8083:8083/tcp
+  environment:
+    MAX_JVM_MEM_SIZE: -Xmx3g -XX:MaxDirectMemorySize=2147483648
+    TIMEZONE: GMT-3
+    BUFFER_SIZE: '67108864'
+    ZOOKEEPER_HOST: zk
+    SERVER_MAX_SIZE: '5000000000'
+    SEGMENT_CACHE_LOCATIONS: '[{"path":"/var/tmp/druid/indexCache","maxSize":5000000000}]'
+    HADOOP_URL: hdfs://hadoop:8020/druid
+    NUM_THREADS: '10'
+  external_links:
+  - hadoop/namenode-primary:hadoop #altere para seu hadoop
+  log_driver: ''
+  tty: true
+  log_opt: {}
+  image: prodest/druid:0.9.0-historical
+  links:
+  - zookeeper:zk
+  stdin_open: true
+coordinator:
   ports:
   - 8081:8081/tcp
+  environment:
+    MAX_JVM_MEM_SIZE: -Xmx3g -XX:MaxDirectMemorySize=2147483648
+    TIMEZONE: GMT-3
+    ZOOKEEPER_HOST: zk
+    COORDINATOR_DELAY: PT5S
+    MYSQL_JDBC_URL: jdbc:mysql://mysql:3306/druid
+    MYSQL_PASS: druid
+    MYSQL_USER: druid
+  log_driver: ''
+  tty: true
+  log_opt: {}
+  image: prodest/druid:0.9.0-coordinator
+  links:
+  - 'mysql:'
+  - zookeeper:zk
+  stdin_open: true
+broker:
+  ports:
   - 8082:8082/tcp
-  - 8090:8090/tcp
+  environment:
+    MAX_JVM_MEM_SIZE: -Xmx4g -XX:MaxDirectMemorySize=3221225472
+    TIMEZONE: GMT-3
+    BUFFER_SIZE: '67108864'
+    CACHE_SIZE: '33554432'
+    ZOOKEEPER_HOST: zk
+  log_driver: ''
+  tty: true
+  log_opt: {}
+  image: prodest/druid:0.9.0-broker
+  links:
+  - zookeeper:zk
+  stdin_open: true
+mysql:
+  ports:
+  - 3306:3306/tcp
+  environment:
+    MYSQL_ROOT_PASSWORD: druid
   log_driver: ''
   labels:
     io.rancher.container.pull_image: always
   tty: true
   log_opt: {}
-  image: druidio/example-cluster
-  volumes:
-  - /opt/dockerdata/druid/druid:/etc/supervisor/conf.d
-  stdin_open: true
-mysql:
-  volumes:
-  - /opt/dockerdata/druid:/etc/supervisor/conf.d
+  image: mysql:5
+
