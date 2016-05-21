@@ -1,6 +1,7 @@
 #imagem base de construção do druid
 FROM ubuntu:14.04
 
+
 # Java 8
 RUN   apt-get update  \
       && apt-get install -y software-properties-common \
@@ -32,6 +33,10 @@ ENV GITHUB_OWNER prodest
 # whichever branch you would like to build
 ENV DRUID_VERSION stable
 
+ENV DRUID_VERSION_NUMBER 0.9.0
+ENV HADOOP_VERSION 2.7.1
+
+
 # Supervisor
 RUN apt-get install -y supervisor
 
@@ -43,11 +48,14 @@ WORKDIR /tmp/druid
 # use versions-maven-plugin 2.1 to work around https://jira.codehaus.org/browse/MVERSIONS-285
 RUN mvn -U -B org.codehaus.mojo:versions-maven-plugin:2.1:set -DgenerateBackupPoms=false -DnewVersion=$DRUID_VERSION \
   && mvn -U -B install -DskipTests=true -Dmaven.javadoc.skip=true \
-  && cp services/target/druid-services-$DRUID_VERSION-selfcontained.jar /usr/local/druid/lib
+  && cp services/target/druid-services-$DRUID_VERSION-selfcontained.jar /usr/local/druid/lib \
+  && java -classpath /usr/local/druid/lib/*   io.druid.cli.Main tools pull-deps --clean -c io.druid.extensions:mysql-metadata-storage:$DRUID_VERSION_NUMBER -c io.druid.extensions.contrib:druid-rabbitmq:$DRUID_VERSION_NUMBER  -h org.apache.hadoop:hadoop-client:$HADOOP_VERSION
+
 
 RUN cp -r distribution/target/extensions /usr/local/druid/ && \
     mkdir -p /usr/local/druid/hadoop && \
-    cp -r distribution/target/hadoop-dependencies /usr/local/druid/hadoop/hadoop_druid_dependencies
+    cp -r distribution/target/hadoop-dependencies /usr/local/druid/hadoop/hadoop_druid_dependencies && \
+    cp -r hadoop-dependencies/* /usr/local/druid/hadoop/hadoop_druid_dependencies
 
 # clean up time
 RUN apt-get purge --auto-remove -y git \
