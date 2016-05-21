@@ -67,6 +67,8 @@ RUN apt-get purge --auto-remove -y git \
                 /usr/local/apache-maven \
                 /root/.m2
 
+WORKDIR /
+
 CMD bash
 
 
