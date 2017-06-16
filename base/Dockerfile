@@ -33,7 +33,7 @@ ENV GITHUB_OWNER prodest
 # whichever branch you would like to build
 ENV DRUID_VERSION stable
 
-ENV DRUID_VERSION_NUMBER 0.9.0
+ENV DRUID_VERSION_NUMBER 0.10.0
 ENV HADOOP_VERSION 2.7.1
 
 
