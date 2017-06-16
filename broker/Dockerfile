@@ -1,4 +1,4 @@
-FROM prodest/druid:0.9.0-base
+FROM prodest/druid:0.10.0-base
 
 # Expose ports:
 # - 8081: HTTP (coordinator)
