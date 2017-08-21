@@ -12,8 +12,8 @@ RUN wget -q -O - \
     http://static.druid.io/tranquility/releases/tranquility-distribution-$TRANQUILITY_VERSION.tgz | tar -xzf - -C /usr/share \
     && ln -s /usr/share/tranquility-distribution-$TRANQUILITY_VERSION /usr/share/tranquility
 
-COPY conf /usr/share/tranquility-distribution-$TRANQUILITY_VERSION/conf
+COPY conf /usr/share/tranquility/conf
 
 WORKDIR /usr/share/tranquility
 
-CMD [ "./bin/tranquility", "server", "-configFile", "/usr/share/tranquility-distribution-0.8.0/conf/server.json" ]
+CMD [ "./bin/tranquility", "server", "-configFile", "/usr/share/tranquility/conf/server.json" ]
