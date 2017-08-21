@@ -2,7 +2,7 @@ FROM openjdk:8-jre-alpine
 
 # Java config
 ENV TRANQUILITY_VERSION                         0.8.0
-ENV TRANQUILITY_PROPERTIES_ZOOKEEPER_CONNECT    $ZOOKEEPER_HOST
+ENV TRANQUILITY_PROPERTIES_ZOOKEEPER_CONNECT    zookeeper
 ENV TRANQUILITY_PROPERTIES_HTTP_PORT            8200
 
 # Dependencies
@@ -16,4 +16,4 @@ COPY conf /usr/share/tranquility-distribution-$TRANQUILITY_VERSION/conf
 
 WORKDIR /usr/share/tranquility
 
-CMD [ "./bin/tranquility", "server", "-configFile", "/usr/share/tranquility-distribution-$TRANQUILITY_VERSION/conf/server.json" ]
+CMD [ "./bin/tranquility", "server", "-configFile", "/usr/share/tranquility-distribution-0.8.0/conf/server.json" ]
