@@ -18,4 +18,4 @@ COPY conf /usr/share/tranquility-distribution-$TRANQUILITY_VERSION/conf
 
 WORKDIR /usr/share/tranquility
 
-CMD ['./bin/tranquility', 'server', '-configFile /usr/share/tranquility-distribution-$TRANQUILITY_VERSION/conf/server.json']
+CMD [ "./bin/tranquility", "server", "-configFile /usr/share/tranquility-distribution-$TRANQUILITY_VERSION/conf/server.json" ]
